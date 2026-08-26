@@ -1,0 +1,358 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens
+   ---------------------------------------------------------------------------
+   Matched to the Stitch mockups: emerald and black on near-white, white cards
+   with hairline borders, generous rounding, very large numerals for the figures
+   that matter.
+
+   Every colour is defined here as a CSS variable, so components reference
+   semantic tokens (`bg-surface`, `text-muted`) and never a raw hex. Light
+   mode only, by decision — no dark theme.
+--------------------------------------------------------------------------- */
+
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f2f4f6;
+  --surface-3: #e8ebee;
+  --border: #e4e7eb;
+  --border-strong: #cbd1d8;
+
+  --text: #0a0c0f;
+  --text-muted: #6b7280;
+  --text-faint: #9aa1ab;
+
+  /* Emerald — primary action, and "available" */
+  --accent: #10b981;
+  --accent-hover: #059c6c;
+  --accent-text: #ffffff;
+  --accent-ring: #10b981;
+  --accent-soft: #d9f5e9;
+  --accent-strong: #34d399; /* on dark grounds, e.g. the LIVE STATUS card */
+
+  /* Black — the secondary heavyweight action ("Vehicle Out", "Get Directions") */
+  --ink: #0a0c0f;
+  --ink-hover: #22262c;
+  --ink-text: #ffffff;
+
+  /* Slot and status semantics, straight from the mockup legends */
+  --free: #047857;
+  --free-surface: #d9f5e9;
+  --free-border: #10b981;
+
+  --occupied: #b42318;
+  --occupied-surface: #fde5e3;
+  --occupied-border: #f4b0aa;
+
+  --vip: #92650e;
+  --vip-surface: #fdf1cf;
+  --vip-border: #e3bd57;
+
+  --oos: #6b7280;
+  --oos-surface: #eef0f2;
+  --oos-border: #cbd1d8;
+
+  --danger: #b42318;
+  --danger-surface: #fde5e3;
+  --warning: #92650e;
+  --warning-surface: #fdf1cf;
+
+  --radius-tile: 0.625rem;
+  --radius-card: 0.875rem;
+  --radius-control: 0.5rem;
+
+  /* ---------------------------------------------------------------------
+     The lot surface.
+
+     The slot map is drawn as a view straight down onto real tarmac —
+     asphalt ground, painted white stall lines shared between neighbouring
+     bays, a drive aisle. These live outside the light/dark surface tokens
+     above because tarmac is dark whatever the page around it is doing, and
+     everything printed on it is therefore light.
+  --------------------------------------------------------------------- */
+  /* Mid-grey tarmac, as it photographs from above. Deliberately neutral: any
+     blue or green in the ground itself is what makes a lot map read as a
+     diagram instead of a surface. */
+  --asphalt: #6d7073;
+  --asphalt-low: #5b5e61;
+  --paint: #f7f9fa;
+  --paint-lane: #e0b23c;
+
+  /* Status tints over the tarmac, at the strength of a stain on the ground
+     rather than a fill. A taken bay gets none at all: what tells you a space is
+     taken is the vehicle sitting in it. A free one gets just enough green to be
+     picked out when scanning a full zone — past roughly 0.15 the ground stops
+     reading as tarmac and the map turns back into a chart. */
+  --bay-free-wash: rgb(16 185 129 / 0.1);
+  --bay-taken-wash: transparent;
+  --bay-held-wash: rgb(224 178 60 / 0.15);
+
+  /* Stall numbers, sprayed on in white as they are on real tarmac. */
+  --bay-ink: #ffffff;
+
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-text: var(--accent-text);
+  --color-accent-ring: var(--accent-ring);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-strong: var(--accent-strong);
+
+  --color-ink: var(--ink);
+  --color-ink-hover: var(--ink-hover);
+  --color-ink-text: var(--ink-text);
+
+  --color-free: var(--free);
+  --color-free-surface: var(--free-surface);
+  --color-free-border: var(--free-border);
+
+  --color-occupied: var(--occupied);
+  --color-occupied-surface: var(--occupied-surface);
+  --color-occupied-border: var(--occupied-border);
+
+  --color-vip: var(--vip);
+  --color-vip-surface: var(--vip-surface);
+  --color-vip-border: var(--vip-border);
+
+  --color-oos: var(--oos);
+  --color-oos-surface: var(--oos-surface);
+  --color-oos-border: var(--oos-border);
+
+  --color-danger: var(--danger);
+  --color-danger-surface: var(--danger-surface);
+  --color-warning: var(--warning);
+  --color-warning-surface: var(--warning-surface);
+
+  --radius-tile: var(--radius-tile);
+  --radius-card: var(--radius-card);
+  --radius-control: var(--radius-control);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+  The mockups set their big figures in a tight, near-black geometric face.
+  Applied via a utility rather than to every heading so body copy keeps its
+  normal tracking.
+*/
+.display-figure {
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* The small uppercase labels above each statistic */
+.stat-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* Visible focus for keyboard users — attendants work fast and many will tab */
+:focus-visible {
+  outline: 2px solid var(--color-accent-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/*
+  Out-of-service hatching.
+
+  Availability is never signalled by colour alone: occupied tiles carry a
+  vehicle glyph, VIP a star, out-of-service a hatch. Colour-blind drivers and a
+  phone screen in Dubai sunlight both defeat green-versus-red, and green/red is
+  the single worst pairing for the most common form of colour blindness.
+*/
+.hatched {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 4px,
+    var(--color-border-strong) 4px,
+    var(--color-border-strong) 5px
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   The lot surface
+--------------------------------------------------------------------------- */
+
+/*
+  Tarmac. Two speckle layers at different sizes, offset from each other, give
+  the aggregate its irregular look — a single repeating dot pattern reads as a
+  texture swatch, which is exactly the "grid of tiles" impression we are trying
+  to get away from.
+*/
+.lot-asphalt {
+  background-color: var(--asphalt);
+  background-image:
+    radial-gradient(circle at 30% 20%, rgb(255 255 255 / 0.05) 0 1px, transparent 1px),
+    radial-gradient(circle at 70% 65%, rgb(0 0 0 / 0.14) 0 1.5px, transparent 1.5px),
+    linear-gradient(160deg, rgb(255 255 255 / 0.04), rgb(0 0 0 / 0.07));
+  background-size:
+    17px 17px,
+    23px 23px,
+    100% 100%;
+}
+
+/* Painted stall number, as sprayed onto the ground. */
+.bay-code {
+  color: var(--bay-ink);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
+}
+
+/* The wheel stop at the head of a space. Faint and a little worn — it exists
+   to break up the empty tarmac so a free bay reads as ground, not as a
+   coloured rectangle. */
+.bay-stop {
+  background-color: rgb(255 255 255 / 0.3);
+}
+
+/*
+  One bay's status wash. Semi-transparent so the tarmac shows through, and
+  never the only signal: a free bay also carries its code in large type, a
+  taken one a vehicle, a held one a pulsing ring, an out-of-service one hazard
+  stripes. Green-versus-red is the worst pairing for the commonest form of
+  colour blindness, and a phone in Dubai sun washes both out.
+*/
+.bay-free {
+  background-color: var(--bay-free-wash);
+}
+.bay-taken {
+  background-color: var(--bay-taken-wash);
+}
+.bay-held {
+  background-color: var(--bay-held-wash);
+}
+/* Hazard paint, as it is actually applied to a closed bay: thin, worn, and
+   over the tarmac rather than instead of it. */
+.bay-oos {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgb(0 0 0 / 0.34) 0 5px,
+    rgb(230 185 63 / 0.34) 5px 10px
+  );
+}
+
+/* The drive aisle beneath a run of bays, with its dashed centre line. */
+.lot-aisle {
+  position: relative;
+  background-color: var(--asphalt-low);
+  overflow: hidden;
+}
+.lot-aisle::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background-image: linear-gradient(
+    90deg,
+    var(--paint-lane) 0 14px,
+    transparent 14px 30px
+  );
+  background-size: 30px 2px;
+  opacity: 0.75;
+}
+/* A slow sheen travelling the lane — the one piece of ambient motion, kept to
+   a single element per zone rather than one per bay. */
+.lot-aisle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(255 255 255 / 0.09) 45%,
+    transparent 90%
+  );
+  transform: translateX(-100%);
+  animation: lane-sheen 7s linear infinite;
+}
+
+@keyframes lane-sheen {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/*
+  A vehicle settling into its space. One-shot, on mount.
+
+  Scale and opacity only, deliberately no rotation or translation. Which way a
+  sprite faces is set with Tailwind's `rotate-*`, and that compiles to the
+  standalone `rotate` property, which *composes* with whatever `transform` this
+  animation sets rather than replacing it — a `rotate()` in here would be added
+  to that one and land the vehicle at twice the angle. A uniform scale is the
+  same in any orientation, so one animation serves every sprite.
+*/
+@keyframes vehicle-arrive {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.vehicle-arrive {
+  animation: vehicle-arrive 420ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* A bay held for a driver still on their way. */
+@keyframes bay-hold-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+.bay-hold-ring {
+  animation: bay-hold-pulse 1.8s ease-in-out infinite;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "parking-system",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "seed": "node --conditions=react-server --env-file=.env.local --import tsx scripts/seed.ts",
+    "emulators": "firebase emulators:start --project parkingsystem-4b6e4",
+    "seed:emulator": "node --conditions=react-server --env-file=.env.emulator --import tsx scripts/seed.ts",
+    "rules:deploy": "node --conditions=react-server --env-file=.env.local --import tsx scripts/deployRules.ts",
+    "rules:verify": "node --env-file=.env.local scripts/verifyRules.mjs"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "firebase": "^12.17.1",
+    "firebase-admin": "^14.2.0",
+    "lucide-react": "^1.31.0",
+    "next": "16.3.1",
+    "next-intl": "^4.13.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.1",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.5",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.1",
+    "prettier": "^3.9.6",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.12",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
+  }
+}

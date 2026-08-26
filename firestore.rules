@@ -1,0 +1,91 @@
+rules_version = '2';
+
+// Parking system access rules.
+//
+// The governing decision: NO CLIENT WRITES ANYWHERE. Every mutation goes
+// through a Next.js server action using the Admin SDK, which bypasses these
+// rules. That keeps all the correctness logic — slot transitions, fee
+// calculation, receipt numbering, audit entries — in one place, instead of
+// duplicating it here in a language that cannot express transactions.
+//
+// So these rules only have to answer one question: who may READ what.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return signedIn() && request.auth.token.role == 'owner';
+    }
+
+    // Owners see every lot; attendants only the lots in their claim.
+    function hasLotAccess(lotId) {
+      return isOwner() ||
+        (signedIn() &&
+         request.auth.token.lotIds is list &&
+         lotId in request.auth.token.lotIds);
+    }
+
+    match /lots/{lotId} {
+
+      // Name, address, opening hours — information the lot displays publicly.
+      allow read: if true;
+      allow write: if false;
+
+      // The single denormalised document anonymous drivers subscribe to.
+      // Contains counts and free/taken flags only: no plates, no fees, no times.
+      match /publicView/{docId} {
+        allow read: if true;
+        allow write: if false;
+      }
+
+      // §7 gives the public a rates page, so rates are readable by anyone.
+      match /rates/{rateId} {
+        allow read: if true;
+        allow write: if false;
+      }
+
+      // Staff-only. Slots carry the current session id, sessions carry plate
+      // numbers — personal data under UAE rules (§9).
+      match /slots/{slotId} {
+        allow read: if hasLotAccess(lotId);
+        allow write: if false;
+      }
+
+      match /sessions/{sessionId} {
+        allow read: if hasLotAccess(lotId);
+        allow write: if false;
+      }
+
+      match /turnaways/{turnawayId} {
+        allow read: if hasLotAccess(lotId);
+        allow write: if false;
+      }
+
+      // Who changed what — the owner's oversight of their own staff.
+      match /auditLog/{entryId} {
+        allow read: if isOwner();
+        allow write: if false;
+      }
+
+      // Receipt sequence. Server-side only; nothing should read this directly.
+      match /counters/{counterId} {
+        allow read, write: if false;
+      }
+    }
+
+    // Staff may read their own record; the owner may read all of them.
+    match /users/{uid} {
+      allow read: if isOwner() || (signedIn() && request.auth.uid == uid);
+      allow write: if false;
+    }
+
+    // Anything not named above is denied.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
