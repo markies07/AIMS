@@ -31,6 +31,14 @@ export default async function ReceiptPage({
   const user = await getCurrentUser();
   if (!user) redirect("/admin");
 
+  // Being signed in is not enough. A receipt carries a plate number and a
+  // payment record — personal data under §9 — so the caller must actually
+  // belong to this lot. `notFound` rather than a 403, so probing session ids
+  // cannot confirm which ones exist.
+  if (user.role !== "owner" && !user.lotIds.includes(DEFAULT_LOT_ID)) {
+    notFound();
+  }
+
   const t = await getTranslations("receipt");
   const ts = await getTranslations("staff");
   const tc = await getTranslations("common");
